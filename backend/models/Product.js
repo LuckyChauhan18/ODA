@@ -71,6 +71,21 @@ const productSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  ageGroup: {
+    type: String,
+    enum: ['less-5', '5-8', '8-12', '12+'],
+    default: undefined,
+  },
+  material: {
+    type: String,
+    trim: true,
+    default: undefined,
+  },
+  decorType: {
+    type: String,
+    trim: true,
+    default: undefined,
+  },
 }, {
   timestamps: true,
 });

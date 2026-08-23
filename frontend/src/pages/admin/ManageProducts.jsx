@@ -5,8 +5,9 @@ import toast from 'react-hot-toast';
 import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineX } from 'react-icons/hi';
 
 const emptyProduct = {
-  name: '', description: '', price: '', originalPrice: '', category: '',
+  name: '', description: '', price: '', originalPrice: '', category: 'Toys',
   brand: '', images: [''], stock: '', featured: false,
+  ageGroup: '', material: '', decorType: '',
 };
 
 export default function ManageProducts() {
@@ -16,6 +17,8 @@ export default function ManageProducts() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [form, setForm] = useState(emptyProduct);
   const [saving, setSaving] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('Toys');
+  const [customCategory, setCustomCategory] = useState('');
 
   useEffect(() => { fetchProducts(); }, []);
 
@@ -30,21 +33,43 @@ export default function ManageProducts() {
     }
   };
 
+  const handleCategoryChange = (val) => {
+    setSelectedCategory(val);
+    if (val !== 'Other') {
+      setForm((prev) => ({ ...prev, category: val }));
+    } else {
+      setForm((prev) => ({ ...prev, category: customCategory }));
+    }
+  };
+
+  const handleCustomCategoryChange = (val) => {
+    setCustomCategory(val);
+    setForm((prev) => ({ ...prev, category: val }));
+  };
+
   const openCreate = () => {
     setEditingProduct(null);
     setForm(emptyProduct);
+    setSelectedCategory('Toys');
+    setCustomCategory('');
     setShowModal(true);
   };
 
   const openEdit = (product) => {
     setEditingProduct(product);
+    const isStandard = ['Toys', 'Home Decoration', 'Rakhi'].includes(product.category);
     setForm({
       name: product.name, description: product.description,
       price: product.price, originalPrice: product.originalPrice || '',
       category: product.category, brand: product.brand || '',
       images: product.images?.length ? product.images : [''],
       stock: product.stock, featured: product.featured,
+      ageGroup: product.ageGroup || '',
+      material: product.material || '',
+      decorType: product.decorType || '',
     });
+    setSelectedCategory(isStandard ? product.category : 'Other');
+    setCustomCategory(isStandard ? '' : product.category);
     setShowModal(true);
   };
 
@@ -58,6 +83,9 @@ export default function ManageProducts() {
         originalPrice: form.originalPrice ? Number(form.originalPrice) : undefined,
         stock: Number(form.stock),
         images: form.images.filter((img) => img.trim()),
+        ageGroup: form.category === 'Toys' ? (form.ageGroup || undefined) : undefined,
+        material: form.category === 'Home Decoration' ? (form.material || undefined) : undefined,
+        decorType: form.category === 'Home Decoration' ? (form.decorType || undefined) : undefined,
       };
       if (editingProduct) {
         await api.put(`/products/${editingProduct._id}`, payload);
@@ -189,9 +217,16 @@ export default function ManageProducts() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Category</label>
-                  <input type="text" required value={form.category}
-                         onChange={(e) => setForm({ ...form, category: e.target.value })}
-                         className="input-field" />
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => handleCategoryChange(e.target.value)}
+                    className="px-4 py-2.5 rounded-xl text-sm bg-surface-3 border border-glass-border text-text focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer w-full"
+                  >
+                    <option value="Toys">Toys</option>
+                    <option value="Home Decoration">Home Decoration</option>
+                    <option value="Rakhi">Rakhi</option>
+                    <option value="Other">Other (Custom)</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1.5">Brand</label>
@@ -200,6 +235,80 @@ export default function ManageProducts() {
                          className="input-field" />
                 </div>
               </div>
+
+              {selectedCategory === 'Other' && (
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">Custom Category Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={customCategory}
+                    onChange={(e) => handleCustomCategoryChange(e.target.value)}
+                    className="input-field"
+                    placeholder="Enter custom category"
+                  />
+                </div>
+              )}
+
+              {/* Conditional Fields based on Category */}
+              {form.category === 'Toys' && (
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">Age Group</label>
+                  <select
+                    value={form.ageGroup}
+                    onChange={(e) => setForm({ ...form, ageGroup: e.target.value })}
+                    className="px-4 py-2.5 rounded-xl text-sm bg-surface-3 border border-glass-border text-text focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer w-full"
+                    required
+                  >
+                    <option value="">Select Age Group</option>
+                    <option value="less-5">Less than 5 years</option>
+                    <option value="5-8">5-8 years</option>
+                    <option value="8-12">8-12 years</option>
+                    <option value="12+">12+ years</option>
+                  </select>
+                </div>
+              )}
+
+              {form.category === 'Home Decoration' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">Material</label>
+                    <select
+                      value={form.material}
+                      onChange={(e) => setForm({ ...form, material: e.target.value })}
+                      className="px-4 py-2.5 rounded-xl text-sm bg-surface-3 border border-glass-border text-text focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer w-full"
+                    >
+                      <option value="">Select Material (Optional)</option>
+                      <option value="Wood">Wood</option>
+                      <option value="Metal">Metal</option>
+                      <option value="Ceramic">Ceramic</option>
+                      <option value="Fabric">Fabric</option>
+                      <option value="Glass">Glass</option>
+                      <option value="Wax">Wax</option>
+                      <option value="Plastic">Plastic</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">Decor Type</label>
+                    <select
+                      value={form.decorType}
+                      onChange={(e) => setForm({ ...form, decorType: e.target.value })}
+                      className="px-4 py-2.5 rounded-xl text-sm bg-surface-3 border border-glass-border text-text focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer w-full"
+                    >
+                      <option value="">Select Type (Optional)</option>
+                      <option value="Wall Art">Wall Art</option>
+                      <option value="Vase">Vase</option>
+                      <option value="Lighting">Lighting</option>
+                      <option value="Candle">Candle</option>
+                      <option value="Clock">Clock</option>
+                      <option value="Cushions">Cushions</option>
+                      <option value="Rug">Rug</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium mb-1.5">Image URL</label>
                 <input type="url" value={form.images[0]}

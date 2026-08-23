@@ -119,6 +119,9 @@ export default function Products() {
   const minPrice = searchParams.get('minPrice') || '';
   const maxPrice = searchParams.get('maxPrice') || '';
   const rating = searchParams.get('rating') || '';
+  const ageGroup = searchParams.get('ageGroup') || '';
+  const material = searchParams.get('material') || '';
+  const decorType = searchParams.get('decorType') || '';
   const page = parseInt(searchParams.get('page')) || 1;
 
   useEffect(() => {
@@ -140,6 +143,9 @@ export default function Products() {
       if (minPrice) params.set('minPrice', minPrice);
       if (maxPrice) params.set('maxPrice', maxPrice);
       if (rating) params.set('rating', rating);
+      if (ageGroup) params.set('ageGroup', ageGroup);
+      if (material) params.set('material', material);
+      if (decorType) params.set('decorType', decorType);
       params.set('page', page);
       params.set('limit', 12);
 
@@ -169,15 +175,56 @@ export default function Products() {
     } else {
       newParams.delete(key);
     }
+    // If category changes, clear specific sub-filters to prevent query conflicts!
+    if (key === 'category') {
+      newParams.delete('ageGroup');
+      newParams.delete('material');
+      newParams.delete('decorType');
+    }
     newParams.delete('page'); // Reset page on filter change
     setSearchParams(newParams);
+  };
+
+  const selectPriceRange = (range) => {
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('page');
+    if (range === '') {
+      newParams.delete('minPrice');
+      newParams.delete('maxPrice');
+    } else if (range === 'under-200') {
+      newParams.delete('minPrice');
+      newParams.set('maxPrice', '200');
+    } else if (range === '200-300') {
+      newParams.set('minPrice', '200');
+      newParams.set('maxPrice', '300');
+    } else if (range === '300-500') {
+      newParams.set('minPrice', '300');
+      newParams.set('maxPrice', '500');
+    } else if (range === '500-1000') {
+      newParams.set('minPrice', '500');
+      newParams.set('maxPrice', '1000');
+    } else if (range === '1000-plus') {
+      newParams.set('minPrice', '1000');
+      newParams.delete('maxPrice');
+    }
+    setSearchParams(newParams);
+  };
+
+  const getActivePriceRange = () => {
+    if (!minPrice && !maxPrice) return '';
+    if (!minPrice && maxPrice === '200') return 'under-200';
+    if (minPrice === '200' && maxPrice === '300') return '200-300';
+    if (minPrice === '300' && maxPrice === '500') return '300-500';
+    if (minPrice === '500' && maxPrice === '1000') return '500-1000';
+    if (minPrice === '1000' && !maxPrice) return '1000-plus';
+    return 'custom';
   };
 
   const clearFilters = () => {
     setSearchParams({});
   };
 
-  const hasActiveFilters = category || minPrice || maxPrice || rating || keyword;
+  const hasActiveFilters = category || minPrice || maxPrice || rating || keyword || ageGroup || material || decorType;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fadeIn">
@@ -241,26 +288,141 @@ export default function Products() {
 
             <div className="space-y-6">
 
-              {/* Price Range */}
+              {/* Categories */}
               <div className="card">
-                <h3 className="text-sm font-semibold text-text uppercase tracking-wider mb-3">Price Range</h3>
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    placeholder="Min"
-                    value={minPrice}
-                    onChange={(e) => updateFilter('minPrice', e.target.value)}
-                    className="input-field !py-2 text-sm"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Max"
-                    value={maxPrice}
-                    onChange={(e) => updateFilter('maxPrice', e.target.value)}
-                    className="input-field !py-2 text-sm"
-                  />
+                <h3 className="text-sm font-semibold text-text uppercase tracking-wider mb-3">Categories</h3>
+                <div className="space-y-1">
+                  <button
+                    onClick={() => updateFilter('category', '')}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all cursor-pointer ${
+                      !category ? 'bg-primary/10 font-bold text-primary-light' : 'hover:bg-glass-hover text-text-secondary'
+                    }`}
+                  >
+                    All Products
+                  </button>
+                  {categories.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => updateFilter('category', cat)}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all cursor-pointer ${
+                        category === cat ? 'bg-primary/10 font-bold text-primary-light' : 'hover:bg-glass-hover text-text-secondary'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
                 </div>
               </div>
+
+              {/* Predefined Price Buckets & Custom Price Range */}
+              <div className="card">
+                <h3 className="text-sm font-semibold text-text uppercase tracking-wider mb-3">Price</h3>
+                <div className="space-y-1 mb-3">
+                  {[
+                    { value: '', label: 'All Prices' },
+                    { value: 'under-200', label: 'Under ₹200' },
+                    { value: '200-300', label: '₹200 - ₹300' },
+                    { value: '300-500', label: '₹300 - ₹500' },
+                    { value: '500-1000', label: '₹500 - ₹1000' },
+                    { value: '1000-plus', label: '₹1000+' },
+                  ].map((range) => {
+                    const isActive = getActivePriceRange() === range.value;
+                    return (
+                      <button
+                        key={range.value}
+                        onClick={() => selectPriceRange(range.value)}
+                        className={`w-full text-left px-3 py-1.5 rounded-lg text-sm transition-all cursor-pointer ${
+                          isActive ? 'bg-primary/10 font-bold text-primary-light' : 'hover:bg-glass-hover text-text-secondary'
+                        }`}
+                      >
+                        {range.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="pt-2 border-t border-glass-border">
+                  <p className="text-[11px] font-semibold text-text-muted uppercase mb-2">Or Custom Range</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      placeholder="Min"
+                      value={minPrice}
+                      onChange={(e) => updateFilter('minPrice', e.target.value)}
+                      className="input-field !py-2 text-xs"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Max"
+                      value={maxPrice}
+                      onChange={(e) => updateFilter('maxPrice', e.target.value)}
+                      className="input-field !py-2 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Category-Specific Filters */}
+              {category === 'Toys' && (
+                <div className="card animate-fadeIn">
+                  <h3 className="text-sm font-semibold text-text uppercase tracking-wider mb-3">Age Group</h3>
+                  <div className="space-y-1">
+                    {[
+                      { value: 'less-5', label: 'Less than 5 years' },
+                      { value: '5-8', label: '5-8 years' },
+                      { value: '8-12', label: '8-12 years' },
+                      { value: '12+', label: '12+ years' },
+                    ].map((group) => (
+                      <button
+                        key={group.value}
+                        onClick={() => updateFilter('ageGroup', ageGroup === group.value ? '' : group.value)}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all cursor-pointer ${
+                          ageGroup === group.value ? 'bg-primary/10 font-bold text-primary-light' : 'hover:bg-glass-hover text-text-secondary'
+                        }`}
+                      >
+                        {group.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {category === 'Home Decoration' && (
+                <>
+                  <div className="card animate-fadeIn">
+                    <h3 className="text-sm font-semibold text-text uppercase tracking-wider mb-3">Material</h3>
+                    <div className="space-y-1">
+                      {['Wood', 'Metal', 'Ceramic', 'Fabric', 'Glass', 'Wax', 'Plastic'].map((mat) => (
+                        <button
+                          key={mat}
+                          onClick={() => updateFilter('material', material === mat ? '' : mat)}
+                          className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all cursor-pointer ${
+                            material === mat ? 'bg-primary/10 font-bold text-primary-light' : 'hover:bg-glass-hover text-text-secondary'
+                          }`}
+                        >
+                          {mat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="card animate-fadeIn">
+                    <h3 className="text-sm font-semibold text-text uppercase tracking-wider mb-3">Decor Type</h3>
+                    <div className="space-y-1">
+                      {['Wall Art', 'Vase', 'Lighting', 'Candle', 'Clock', 'Cushions', 'Rug'].map((type) => (
+                        <button
+                          key={type}
+                          onClick={() => updateFilter('decorType', decorType === type ? '' : type)}
+                          className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all cursor-pointer ${
+                            decorType === type ? 'bg-primary/10 font-bold text-primary-light' : 'hover:bg-glass-hover text-text-secondary'
+                          }`}
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Rating Filter */}
               <div className="card">
@@ -308,7 +470,7 @@ export default function Products() {
               )}
               {category && (
                 <span className="badge-primary flex items-center gap-1">
-                  {category}
+                  Category: {category}
                   <button onClick={() => updateFilter('category', '')} className="hover:text-white cursor-pointer">
                     <HiOutlineX className="w-3 h-3" />
                   </button>
@@ -316,7 +478,7 @@ export default function Products() {
               )}
               {(minPrice || maxPrice) && (
                 <span className="badge-primary flex items-center gap-1">
-                  ₹{minPrice || '0'} - ₹{maxPrice || '∞'}
+                  Price: ₹{minPrice || '0'} - ₹{maxPrice || '∞'}
                   <button onClick={() => { updateFilter('minPrice', ''); updateFilter('maxPrice', ''); }} className="hover:text-white cursor-pointer">
                     <HiOutlineX className="w-3 h-3" />
                   </button>
@@ -326,6 +488,30 @@ export default function Products() {
                 <span className="badge-primary flex items-center gap-1">
                   {rating}★ & up
                   <button onClick={() => updateFilter('rating', '')} className="hover:text-white cursor-pointer">
+                    <HiOutlineX className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+              {ageGroup && (
+                <span className="badge-primary flex items-center gap-1">
+                  Age: {ageGroup === 'less-5' ? 'Under 5' : ageGroup === '5-8' ? '5-8 years' : ageGroup === '8-12' ? '8-12 years' : '12+ years'}
+                  <button onClick={() => updateFilter('ageGroup', '')} className="hover:text-white cursor-pointer">
+                    <HiOutlineX className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+              {material && (
+                <span className="badge-primary flex items-center gap-1">
+                  Material: {material}
+                  <button onClick={() => updateFilter('material', '')} className="hover:text-white cursor-pointer">
+                    <HiOutlineX className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+              {decorType && (
+                <span className="badge-primary flex items-center gap-1">
+                  Type: {decorType}
+                  <button onClick={() => updateFilter('decorType', '')} className="hover:text-white cursor-pointer">
                     <HiOutlineX className="w-3 h-3" />
                   </button>
                 </span>

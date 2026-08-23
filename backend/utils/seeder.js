@@ -20,6 +20,7 @@ const sampleProducts = [
     featured: true,
     ratings: 4.5,
     numReviews: 42,
+    ageGroup: '8-12',
   },
   {
     name: '120-Piece Wooden Building Block Set',
@@ -33,6 +34,7 @@ const sampleProducts = [
     featured: true,
     ratings: 4.8,
     numReviews: 24,
+    ageGroup: '5-8',
   },
   {
     name: 'Electronic Talking Dancing Cactus',
@@ -46,6 +48,7 @@ const sampleProducts = [
     featured: false,
     ratings: 4.2,
     numReviews: 110,
+    ageGroup: 'less-5',
   },
   {
     name: 'DIY Mechanical Robot Arm Kit',
@@ -59,6 +62,7 @@ const sampleProducts = [
     featured: false,
     ratings: 4.6,
     numReviews: 18,
+    ageGroup: '12+',
   },
 
   // Home Decoration
@@ -74,6 +78,8 @@ const sampleProducts = [
     featured: true,
     ratings: 4.7,
     numReviews: 56,
+    material: 'Ceramic',
+    decorType: 'Vase',
   },
   {
     name: 'Ambient Magnetic Balancing LED Lamp',
@@ -87,6 +93,8 @@ const sampleProducts = [
     featured: true,
     ratings: 4.9,
     numReviews: 32,
+    material: 'Wood',
+    decorType: 'Lighting',
   },
   {
     name: 'Bohemian Handwoven Macrame Wall Hanging',
@@ -100,6 +108,8 @@ const sampleProducts = [
     featured: false,
     ratings: 4.4,
     numReviews: 78,
+    material: 'Fabric',
+    decorType: 'Wall Art',
   },
   {
     name: 'Aromatic Soy Wax Scented Candles (Set of 4)',
@@ -113,6 +123,8 @@ const sampleProducts = [
     featured: false,
     ratings: 4.5,
     numReviews: 120,
+    material: 'Wax',
+    decorType: 'Candle',
   },
 
   // Rakhi

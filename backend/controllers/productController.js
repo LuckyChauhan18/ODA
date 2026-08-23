@@ -27,6 +27,21 @@ const getProducts = async (req, res, next) => {
       query.brand = req.query.brand;
     }
 
+    // Filter by ageGroup (for Toys)
+    if (req.query.ageGroup) {
+      query.ageGroup = req.query.ageGroup;
+    }
+
+    // Filter by material (for Home Decoration)
+    if (req.query.material) {
+      query.material = req.query.material;
+    }
+
+    // Filter by decorType (for Home Decoration)
+    if (req.query.decorType) {
+      query.decorType = req.query.decorType;
+    }
+
     // Filter by price range
     if (req.query.minPrice || req.query.maxPrice) {
       query.price = {};
