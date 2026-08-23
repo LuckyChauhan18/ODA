@@ -11,10 +11,15 @@ dotenv.config();
 const app = express();
 
 // Middleware
+const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+const cleanClientUrl = clientUrl.endsWith('/') ? clientUrl.slice(0, -1) : clientUrl;
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.CLIENT_URL 
-    : 'http://localhost:5173',
+  origin: [
+    cleanClientUrl,
+    'http://localhost:5173',
+    'http://localhost:5174'
+  ],
   credentials: true,
 }));
 app.use(express.json());
