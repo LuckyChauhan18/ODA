@@ -8,7 +8,7 @@ import { useState } from 'react';
 
 export default function ProductCard({ product, wishlist = [], onWishlistChange }) {
   const { isAuthenticated } = useAuth();
-  const { addToCart, items = [] } = useCart();
+  const { addToCart, updateQuantity, removeFromCart, items = [] } = useCart();
   const [isWishlisted, setIsWishlisted] = useState(
     wishlist.some((id) => id === product._id)
   );
@@ -38,6 +38,45 @@ export default function ProductCard({ product, wishlist = [], onWishlistChange }
       toast.error('Failed to add to cart');
     } finally {
       setAddingToCart(false);
+    }
+  };
+
+  const handleIncrease = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      toast.error('Please login to update cart');
+      return;
+    }
+    try {
+      if (cartItem) {
+        await updateQuantity(cartItem._id, cartQuantity + 1);
+      } else {
+        await addToCart(product._id, 1);
+      }
+    } catch {
+      toast.error('Failed to update quantity');
+    }
+  };
+
+  const handleDecrease = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      toast.error('Please login to update cart');
+      return;
+    }
+    try {
+      if (cartItem) {
+        if (cartQuantity > 1) {
+          await updateQuantity(cartItem._id, cartQuantity - 1);
+        } else {
+          await removeFromCart(cartItem._id);
+          toast.success('Removed from cart');
+        }
+      }
+    } catch {
+      toast.error('Failed to update quantity');
     }
   };
 
@@ -84,18 +123,37 @@ export default function ProductCard({ product, wishlist = [], onWishlistChange }
             -{discount}%
           </span>
         )}
-        {/* Cart Quantity Badge */}
+        {/* Cart Quantity Controller */}
         {cartQuantity > 0 && (
-          <span
-            className="absolute px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-primary-light shadow-md"
+          <div
+            className="absolute flex items-center bg-white rounded-lg shadow-md border border-glass-border overflow-hidden"
             style={{
               top: discount > 0 ? '42px' : '12px',
               left: '12px',
               zIndex: 10
             }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
           >
-            {cartQuantity} in Cart
-          </span>
+            <button
+              onClick={handleDecrease}
+              className="w-8 h-8 flex items-center justify-center bg-surface-3 hover:bg-glass-hover text-text transition-colors font-bold cursor-pointer select-none"
+            >
+              -
+            </button>
+            <span className="w-8 text-center font-bold text-sm text-text select-none">
+              {cartQuantity}
+            </span>
+            <button
+              onClick={handleIncrease}
+              disabled={cartQuantity >= product.stock}
+              className="w-8 h-8 flex items-center justify-center bg-surface-3 hover:bg-glass-hover text-text transition-colors font-bold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed select-none"
+            >
+              +
+            </button>
+          </div>
         )}
         {/* Wishlist Button */}
         <button
