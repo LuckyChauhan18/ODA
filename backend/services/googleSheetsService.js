@@ -22,8 +22,19 @@ const getSheetsClient = () => {
     return null;
   }
 
-  // Format private key correctly if it has escaped newlines
-  const formattedKey = privateKey.replace(/\\n/g, '\n');
+  // Format private key correctly (rebuild PEM string to be 100% resilient to formatting errors)
+  let formattedKey = privateKey.replace(/\\n/g, '\n').replace(/\\r/g, '\r');
+  const base64Content = formattedKey
+    .replace('-----BEGIN PRIVATE KEY-----', '')
+    .replace('-----END PRIVATE KEY-----', '')
+    .replace(/\s+/g, '');
+
+  const lines = [];
+  for (let i = 0; i < base64Content.length; i += 64) {
+    lines.push(base64Content.slice(i, i + 64));
+  }
+  
+  formattedKey = `-----BEGIN PRIVATE KEY-----\n${lines.join('\n')}\n-----END PRIVATE KEY-----\n`;
 
   try {
     const auth = new google.auth.GoogleAuth({
