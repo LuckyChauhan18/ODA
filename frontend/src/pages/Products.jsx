@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import api from '../utils/api';
 import ProductCard from '../components/ProductCard';
@@ -123,6 +123,15 @@ export default function Products() {
   const material = searchParams.get('material') || '';
   const decorType = searchParams.get('decorType') || '';
   const page = parseInt(searchParams.get('page')) || 1;
+
+  const productsSectionRef = useRef(null);
+
+  useEffect(() => {
+    // Scroll to products section if any search parameters/filters are active
+    if (category || keyword || minPrice || maxPrice || rating || ageGroup || material || decorType || searchParams.get('sort')) {
+      productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [category, keyword, minPrice, maxPrice, rating, ageGroup, material, decorType, searchParams]);
 
   useEffect(() => {
     fetchProducts();
@@ -272,7 +281,7 @@ export default function Products() {
         </div>
       </div>
 
-      <div className="flex gap-8">
+      <div className="flex gap-8 scroll-mt-24" ref={productsSectionRef}>
         {/* Sidebar Filters */}
         <aside className={`${showFilters ? 'fixed inset-0 z-50 bg-surface/90 lg:relative lg:bg-transparent' : 'hidden'} lg:block lg:w-64 shrink-0`}>
           <div className={`${showFilters ? 'absolute right-0 top-0 h-full w-72 bg-surface-2 p-6 overflow-y-auto animate-slideInRight' : ''} lg:relative lg:w-auto lg:bg-transparent lg:p-0`}>
