@@ -6,8 +6,8 @@ import { HiOutlineClipboardList, HiOutlineEye } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 
 const statusColors = {
-  Processing: 'badge-warning',
-  Shipped: 'badge-info',
+  Pending: 'badge-warning',
+  'Out for Delivery': 'badge-info',
   Delivered: 'badge-success',
   Cancelled: 'badge-danger',
 };
@@ -133,7 +133,7 @@ export default function Orders() {
                       </p>
                     </div>
                   </div>
-                  {order.status === 'Processing' && (
+                  {order.status === 'Pending' && (
                     <div className="mt-4 pt-3 border-t border-glass-border flex justify-end">
                       <button
                         onClick={() => handleCancelOrder(order._id)}

@@ -3,10 +3,10 @@ import api from '../../utils/api';
 import { PageLoader } from '../../components/Loader';
 import toast from 'react-hot-toast';
 
-const statusOptions = ['Processing', 'Shipped', 'Delivered', 'Cancelled'];
+const statusOptions = ['Pending', 'Out for Delivery', 'Delivered', 'Cancelled'];
 const statusColors = {
-  Processing: 'badge-warning',
-  Shipped: 'badge-info',
+  Pending: 'badge-warning',
+  'Out for Delivery': 'badge-info',
   Delivered: 'badge-success',
   Cancelled: 'badge-danger',
 };

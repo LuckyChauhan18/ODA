@@ -211,7 +211,7 @@ const cancelOrder = async (req, res, next) => {
     }
 
     // Check if order can be cancelled
-    if (order.status !== 'Processing') {
+    if (order.status !== 'Pending') {
       return res.status(400).json({
         success: false,
         message: `Cannot cancel order that is already ${order.status.toLowerCase()}`,

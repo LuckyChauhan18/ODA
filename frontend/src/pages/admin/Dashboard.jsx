@@ -142,8 +142,8 @@ export default function Dashboard() {
               const total = stats?.totalOrders || 1;
               const pct = Math.round((item.count / total) * 100);
               const colors = {
-                Processing: 'bg-yellow-500',
-                Shipped: 'bg-blue-500',
+                Pending: 'bg-yellow-500',
+                'Out for Delivery': 'bg-blue-500',
                 Delivered: 'bg-green-500',
                 Cancelled: 'bg-red-500',
               };
@@ -177,7 +177,7 @@ export default function Dashboard() {
                   <p className="text-sm font-semibold">₹{order.totalPrice.toLocaleString()}</p>
                   <span className={`text-xs ${
                     order.status === 'Delivered' ? 'text-success' :
-                    order.status === 'Shipped' ? 'text-info' :
+                    order.status === 'Out for Delivery' ? 'text-info' :
                     order.status === 'Cancelled' ? 'text-danger' : 'text-warning'
                   }`}>{order.status}</span>
                 </div>
