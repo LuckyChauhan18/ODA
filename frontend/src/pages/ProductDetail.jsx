@@ -21,7 +21,7 @@ import {
 export default function ProductDetail() {
   const { id } = useParams();
   const { user, isAuthenticated } = useAuth();
-  const { addToCart } = useCart();
+  const { addToCart, items = [] } = useCart();
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,6 +30,11 @@ export default function ProductDetail() {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
   const [submittingReview, setSubmittingReview] = useState(false);
+
+  const cartItem = items.find(
+    (item) => item.product?._id === id || item.product === id
+  );
+  const cartQuantity = cartItem ? cartItem.quantity : 0;
 
   useEffect(() => {
     fetchProduct();
@@ -181,12 +186,19 @@ export default function ProductDetail() {
           {/* Description */}
           <p className="text-text-secondary leading-relaxed">{product.description}</p>
 
-          {/* Stock */}
-          <div>
-            {product.stock > 0 ? (
-              <span className="text-success font-medium">✓ In Stock ({product.stock} available)</span>
-            ) : (
-              <span className="text-danger font-medium">✗ Out of Stock</span>
+          {/* Stock & Cart Quantity */}
+          <div className="flex items-center gap-4 flex-wrap">
+            <div>
+              {product.stock > 0 ? (
+                <span className="text-success font-medium">✓ In Stock ({product.stock} available)</span>
+              ) : (
+                <span className="text-danger font-medium">✗ Out of Stock</span>
+              )}
+            </div>
+            {cartQuantity > 0 && (
+              <div className="px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary-light border border-primary/20">
+                🛒 {cartQuantity} already in cart
+              </div>
             )}
           </div>
 

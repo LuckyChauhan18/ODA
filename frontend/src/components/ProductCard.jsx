@@ -8,11 +8,16 @@ import { useState } from 'react';
 
 export default function ProductCard({ product, wishlist = [], onWishlistChange }) {
   const { isAuthenticated } = useAuth();
-  const { addToCart } = useCart();
+  const { addToCart, items = [] } = useCart();
   const [isWishlisted, setIsWishlisted] = useState(
     wishlist.some((id) => id === product._id)
   );
   const [addingToCart, setAddingToCart] = useState(false);
+
+  const cartItem = items.find(
+    (item) => item.product?._id === product._id || item.product === product._id
+  );
+  const cartQuantity = cartItem ? cartItem.quantity : 0;
 
   const discount = product.originalPrice
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
@@ -76,6 +81,19 @@ export default function ProductCard({ product, wishlist = [], onWishlistChange }
           <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg text-xs font-bold text-white"
                 style={{ background: 'linear-gradient(135deg, var(--color-secondary), #FF7043)' }}>
             -{discount}%
+          </span>
+        )}
+        {/* Cart Quantity Badge */}
+        {cartQuantity > 0 && (
+          <span
+            className="absolute px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-primary-light shadow-md"
+            style={{
+              top: discount > 0 ? '42px' : '12px',
+              left: '12px',
+              zIndex: 10
+            }}
+          >
+            {cartQuantity} in Cart
           </span>
         )}
         {/* Wishlist Button */}
