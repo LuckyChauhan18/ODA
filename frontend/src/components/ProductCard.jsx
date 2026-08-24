@@ -62,7 +62,7 @@ export default function ProductCard({ product, wishlist = [], onWishlistChange }
   return (
     <Link
       to={`/products/${product._id}`}
-      className="group card !p-0 overflow-hidden card-hover hover:!-translate-y-2 block"
+      className="group card !p-0 overflow-hidden card-hover hover:!-translate-y-2 flex flex-col h-full"
     >
       {/* Image */}
       <div className="relative overflow-hidden aspect-square bg-surface-3">
@@ -109,19 +109,21 @@ export default function ProductCard({ product, wishlist = [], onWishlistChange }
       </div>
 
       {/* Info */}
-      <div className="p-4">
-        <p className="text-xs text-primary-light font-medium mb-1">{product.category}</p>
-        <h3 className="text-sm font-semibold text-text line-clamp-2 mb-2 group-hover:text-primary-light transition-colors">
-          {product.name}
-        </h3>
-        <div className="flex items-center gap-1 mb-2">
-          {[...Array(5)].map((_, i) => (
-            <HiStar
-              key={i}
-              className={`w-3.5 h-3.5 ${i < Math.round(product.ratings) ? 'text-yellow-400' : 'text-surface-4'}`}
-            />
-          ))}
-          <span className="text-xs text-text-muted ml-1">({product.numReviews})</span>
+      <div className="p-4 flex-1 flex flex-col justify-between">
+        <div>
+          <p className="text-xs text-primary-light font-medium mb-1">{product.category}</p>
+          <h3 className="text-sm font-semibold text-text line-clamp-2 mb-2 group-hover:text-primary-light transition-colors">
+            {product.name}
+          </h3>
+          <div className="flex items-center gap-1 mb-2">
+            {[...Array(5)].map((_, i) => (
+              <HiStar
+                key={i}
+                className={`w-3.5 h-3.5 ${i < Math.round(product.ratings) ? 'text-yellow-400' : 'text-surface-4'}`}
+              />
+            ))}
+            <span className="text-xs text-text-muted ml-1">({product.numReviews})</span>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-lg font-bold text-text">₹{product.price.toLocaleString()}</span>

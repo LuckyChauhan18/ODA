@@ -42,7 +42,7 @@ export default function Wishlist() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {wishlist.map((product, i) => (
-            <div key={product._id} className="animate-slideUp" style={{ animationDelay: `${i * 0.05}s` }}>
+            <div key={product._id} className="animate-slideUp h-full" style={{ animationDelay: `${i * 0.05}s` }}>
               <ProductCard
                 product={product}
                 wishlist={wishlist.map((w) => w._id)}

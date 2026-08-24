@@ -541,7 +541,7 @@ export default function Products() {
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                 {products.map((product, i) => (
-                  <div key={product._id} className="animate-slideUp" style={{ animationDelay: `${i * 0.03}s` }}>
+                  <div key={product._id} className="animate-slideUp h-full" style={{ animationDelay: `${i * 0.03}s` }}>
                     <ProductCard product={product} />
                   </div>
                 ))}
