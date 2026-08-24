@@ -68,6 +68,7 @@ export default function ProductCard({ product, wishlist = [], onWishlistChange }
     <Link
       to={`/products/${product._id}`}
       className="group card !p-0 overflow-hidden card-hover hover:!-translate-y-2 flex flex-col h-full"
+      style={{ backgroundColor: '#d5b59c' }}
     >
       {/* Image */}
       <div className="relative overflow-hidden aspect-square bg-surface-3">
