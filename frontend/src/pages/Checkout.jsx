@@ -7,65 +7,45 @@ import { HiCheck } from 'react-icons/hi';
 
 const steps = ['Shipping', 'Payment', 'Review'];
 
-const locationData = {
-  India: {
-    states: {
-      'Andhra Pradesh': ['Visakhapatnam', 'Vijayawada', 'Guntur', 'Nellore', 'Tirupati', 'Kurnool'],
-      'Bihar': ['Patna', 'Gaya', 'Bhagalpur', 'Muzaffarpur', 'Darbhanga', 'Bihar Sharif'],
-      'Delhi': ['New Delhi', 'Delhi Cantonment', 'Dwarka', 'Rohini', 'Vasant Kunj'],
-      'Gujarat': ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Bhavnagar', 'Jamnagar', 'Gandhinagar'],
-      'Haryana': ['Gurugram', 'Faridabad', 'Panipat', 'Ambala', 'Yamunanagar', 'Rohtak', 'Hisar'],
-      'Karnataka': ['Bengaluru', 'Mysuru', 'Hubballi', 'Mangaluru', 'Belagavi', 'Davangere'],
-      'Kerala': ['Thiruvananthapuram', 'Kochi', 'Kozhikode', 'Thrissur', 'Kollam', 'Alappuzha'],
-      'Madhya Pradesh': ['Indore', 'Bhopal', 'Jabalpur', 'Gwalior', 'Ujjain', 'Sagar'],
-      'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Thane', 'Nashik', 'Aurangabad', 'Navi Mumbai', 'Solapur'],
-      'Punjab': ['Ludhiana', 'Amritsar', 'Jalandhar', 'Patiala', 'Bathinda', 'Mohali'],
-      'Rajasthan': ['Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Bikaner', 'Ajmer'],
-      'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Salem', 'Tiruppur'],
-      'Telangana': ['Hyderabad', 'Warangal', 'Nizamabad', 'Karimnagar', 'Khammam'],
-      'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Ghaziabad', 'Agra', 'Varanasi', 'Meerut', 'Noida', 'Prayagraj'],
-      'West Bengal': ['Kolkata', 'Howrah', 'Durgapur', 'Siliguri', 'Asansol', 'Kharagpur']
-    },
-    zipRegex: /^[1-9][0-9]{5}$/,
-    zipPlaceholder: '400001 (6-digit PIN code)',
-    zipLabel: 'PIN Code'
-  },
-  'United States': {
-    states: {
-      'California': ['Los Angeles', 'San Francisco', 'San Diego', 'San Jose', 'Sacramento', 'Oakland'],
-      'Texas': ['Houston', 'Austin', 'Dallas', 'San Antonio', 'Fort Worth', 'El Paso'],
-      'New York': ['New York City', 'Buffalo', 'Rochester', 'Syracuse', 'Albany', 'Yonkers'],
-      'Florida': ['Miami', 'Orlando', 'Tampa', 'Jacksonville', 'Tallahassee', 'St. Petersburg'],
-      'Illinois': ['Chicago', 'Aurora', 'Naperville', 'Joliet', 'Rockford', 'Springfield'],
-      'Washington': ['Seattle', 'Spokane', 'Tacoma', 'Vancouver', 'Bellevue', 'Olympia']
-    },
-    zipRegex: /^\d{5}(-\d{4})?$/,
-    zipPlaceholder: '90210 or 90210-1234 (ZIP code)',
-    zipLabel: 'ZIP Code'
-  },
-  Canada: {
-    states: {
-      'Ontario': ['Toronto', 'Ottawa', 'Mississauga', 'Hamilton', 'London', 'Brampton'],
-      'Quebec': ['Montreal', 'Quebec City', 'Laval', 'Gatineau', 'Longueuil', 'Sherbrooke'],
-      'British Columbia': ['Vancouver', 'Victoria', 'Surrey', 'Burnaby', 'Richmond', 'Kelowna'],
-      'Alberta': ['Calgary', 'Edmonton', 'Red Deer', 'Lethbridge', 'St. Albert']
-    },
-    zipRegex: /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/,
-    zipPlaceholder: 'K1A 0B1 (Postal Code)',
-    zipLabel: 'Postal Code'
-  },
-  'United Kingdom': {
-    states: {
-      'England': ['London', 'Birmingham', 'Manchester', 'Liverpool', 'Leeds', 'Bristol', 'Newcastle'],
-      'Scotland': ['Edinburgh', 'Glasgow', 'Aberdeen', 'Dundee', 'Inverness'],
-      'Wales': ['Cardiff', 'Swansea', 'Newport', 'St Davids'],
-      'Northern Ireland': ['Belfast', 'Derry', 'Lisburn', 'Newry', 'Armagh']
-    },
-    zipRegex: /^[A-Z]{1,2}[0-9R][0-9A-Z]? [0-9][A-Z]{2}$/i,
-    zipPlaceholder: 'EC1A 1BB (Postcode)',
-    zipLabel: 'Postcode'
-  }
-};
+
+const indianStates = [
+  'Andhra Pradesh',
+  'Arunachal Pradesh',
+  'Assam',
+  'Bihar',
+  'Chhattisgarh',
+  'Goa',
+  'Gujarat',
+  'Haryana',
+  'Himachal Pradesh',
+  'Jharkhand',
+  'Karnataka',
+  'Kerala',
+  'Madhya Pradesh',
+  'Maharashtra',
+  'Manipur',
+  'Meghalaya',
+  'Mizoram',
+  'Nagaland',
+  'Odisha',
+  'Punjab',
+  'Rajasthan',
+  'Sikkim',
+  'Tamil Nadu',
+  'Telangana',
+  'Tripura',
+  'Uttarakhand',
+  'Uttar Pradesh',
+  'West Bengal',
+  'Andaman and Nicobar Islands',
+  'Chandigarh',
+  'Dadra and Nagar Haveli and Daman and Diu',
+  'Delhi',
+  'Jammu and Kashmir',
+  'Ladakh',
+  'Lakshadweep',
+  'Puducherry'
+];
 
 const isFakeZip = (zip, country) => {
   if (country === 'India') {
@@ -86,9 +66,15 @@ export default function Checkout() {
   const [currentStep, setCurrentStep] = useState(0);
   const [placing, setPlacing] = useState(false);
   const [shipping, setShipping] = useState({
-    street: '', city: '', state: '', zip: '', country: 'India',
+    street: '',
+    city: '',
+    district: '',
+    state: '',
+    zip: '',
+    country: 'India',
+    customCountry: '',
+    customState: '',
   });
-  const [customCity, setCustomCity] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('COD');
 
   const shippingPrice = totalPrice > 500 ? 0 : 50;
@@ -98,48 +84,67 @@ export default function Checkout() {
   const handleShippingSubmit = (e) => {
     e.preventDefault();
 
-    const { country, state, city, zip } = shipping;
+    const { country, customCountry, state, customState, district, city, zip } = shipping;
 
-    if (!country || !state || !city || !zip) {
-      toast.error('Please fill in all shipping details');
+    const finalCountry = country === 'Other' ? customCountry.trim() : country;
+    const finalState = country === 'Other' ? customState.trim() : state;
+
+    if (!finalCountry) {
+      toast.error('Please specify a country');
+      return;
+    }
+    if (!finalState) {
+      toast.error('Please specify a state');
+      return;
+    }
+    if (!district.trim()) {
+      toast.error('Please enter the name of the district');
+      return;
+    }
+    if (!city.trim()) {
+      toast.error('Please enter the name of the city');
+      return;
+    }
+    if (!zip.trim()) {
+      toast.error('Please enter the PIN/ZIP code');
       return;
     }
 
-    const countryConfig = locationData[country];
-    if (!countryConfig) {
-      toast.error('Invalid country selection');
-      return;
-    }
-
-    // Validate ZIP Code regex
-    if (!countryConfig.zipRegex.test(zip)) {
-      toast.error(`Please enter a valid ${countryConfig.zipLabel} for ${country}`);
-      return;
-    }
-
-    // Check for fake ZIP code
-    if (isFakeZip(zip, country)) {
-      toast.error(`Invalid ${countryConfig.zipLabel}. Please enter a real postal code.`);
-      return;
-    }
-
-    // Determine final city value
-    const finalCity = city === 'Other' ? customCity.trim() : city;
-    if (!finalCity) {
-      toast.error('Please specify a city name');
-      return;
-    }
-
-    // Validate custom city name
-    if (city === 'Other') {
-      if (!/^[a-zA-Z\s.-]+$/.test(finalCity)) {
-        toast.error('City name must contain only letters, spaces, or dashes');
+    // Validate India specifically
+    if (country === 'India') {
+      const pinRegex = /^[1-9][0-9]{5}$/;
+      if (!pinRegex.test(zip)) {
+        toast.error('Please enter a valid 6-digit Indian PIN code');
         return;
       }
-      if (isFakeCity(finalCity)) {
-        toast.error('Please enter a valid city name, not a fake or placeholder name');
+      if (isFakeZip(zip, 'India')) {
+        toast.error('Invalid PIN code. Please enter a real postal code.');
         return;
       }
+    } else {
+      // General zip code validation for other countries
+      if (zip.trim().length < 3 || zip.trim().length > 10) {
+        toast.error('Please enter a valid ZIP/Postal Code');
+        return;
+      }
+    }
+
+    // Validate District and City name (no dummy/fake values)
+    if (isFakeCity(district)) {
+      toast.error('Please enter a valid district name');
+      return;
+    }
+    if (isFakeCity(city)) {
+      toast.error('Please enter a valid city name');
+      return;
+    }
+    if (!/^[a-zA-Z\s.-]+$/.test(district.trim())) {
+      toast.error('District name must contain only letters, spaces, or dashes');
+      return;
+    }
+    if (!/^[a-zA-Z\s.-]+$/.test(city.trim())) {
+      toast.error('City name must contain only letters, spaces, or dashes');
+      return;
     }
 
     setCurrentStep(1);
@@ -154,8 +159,11 @@ export default function Checkout() {
     try {
       setPlacing(true);
       const finalShipping = {
-        ...shipping,
-        city: shipping.city === 'Other' ? customCity.trim() : shipping.city
+        street: shipping.street,
+        country: shipping.country === 'Other' ? shipping.customCountry.trim() : shipping.country,
+        state: shipping.country === 'Other' ? shipping.customState.trim() : shipping.state,
+        city: `${shipping.district.trim()}, ${shipping.city.trim()}`,
+        zip: shipping.zip,
       };
       const { data } = await api.post('/orders', {
         shippingAddress: finalShipping,
@@ -230,93 +238,96 @@ export default function Checkout() {
                     setShipping({
                       ...shipping,
                       country: newCountry,
+                      customCountry: '',
                       state: '',
+                      customState: '',
+                      district: '',
                       city: '',
                       zip: '',
                     });
-                    setCustomCity('');
                   }}
                   className="input-field cursor-pointer"
                 >
-                  <option value="">Select Country</option>
-                  {Object.keys(locationData).map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
+                  <option value="India">India</option>
+                  <option value="Other">Other (Outside India)</option>
                 </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5">State</label>
-                <select
-                  required
-                  disabled={!shipping.country}
-                  value={shipping.state}
-                  onChange={(e) => {
-                    setShipping({
-                      ...shipping,
-                      state: e.target.value,
-                      city: '',
-                    });
-                    setCustomCity('');
-                  }}
-                  className="input-field cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <option value="">Select State</option>
-                  {shipping.country &&
-                    Object.keys(locationData[shipping.country].states).map((s) => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-1.5">City</label>
-                <select
-                  required
-                  disabled={!shipping.state}
-                  value={shipping.city}
-                  onChange={(e) => {
-                    const newCity = e.target.value;
-                    setShipping({ ...shipping, city: newCity });
-                    if (newCity !== 'Other') {
-                      setCustomCity('');
-                    }
-                  }}
-                  className="input-field cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <option value="">Select City</option>
-                  {shipping.country && shipping.state &&
-                    locationData[shipping.country].states[shipping.state].map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  <option value="Other">Other (Type custom city)</option>
-                </select>
-                {shipping.city === 'Other' && (
+                {shipping.country === 'Other' && (
                   <div className="mt-3">
                     <input
                       type="text"
                       required
-                      value={customCity}
-                      onChange={(e) => setCustomCity(e.target.value)}
+                      value={shipping.customCountry}
+                      onChange={(e) => setShipping({ ...shipping, customCountry: e.target.value })}
                       className="input-field"
-                      placeholder="Enter city name"
+                      placeholder="Enter country name"
                     />
                   </div>
                 )}
               </div>
               <div>
+                <label className="block text-sm font-medium mb-1.5">State</label>
+                {shipping.country === 'India' ? (
+                  <select
+                    required
+                    value={shipping.state}
+                    onChange={(e) => setShipping({ ...shipping, state: e.target.value })}
+                    className="input-field cursor-pointer"
+                  >
+                    <option value="">Select State</option>
+                    {indianStates.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    required
+                    value={shipping.customState}
+                    onChange={(e) => setShipping({ ...shipping, customState: e.target.value })}
+                    className="input-field"
+                    placeholder="Enter state/province"
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1.5">District</label>
+                <input
+                  type="text"
+                  required
+                  value={shipping.district}
+                  onChange={(e) => setShipping({ ...shipping, district: e.target.value })}
+                  className="input-field"
+                  placeholder="e.g. Lucknow"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">City</label>
+                <input
+                  type="text"
+                  required
+                  value={shipping.city}
+                  onChange={(e) => setShipping({ ...shipping, city: e.target.value })}
+                  className="input-field"
+                  placeholder="e.g. Varanasi"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
                 <label className="block text-sm font-medium mb-1.5">
-                  {shipping.country ? locationData[shipping.country].zipLabel : 'PIN/ZIP Code'}
+                  {shipping.country === 'India' ? 'PIN Code' : 'ZIP/Postal Code'}
                 </label>
                 <input
                   type="text"
                   required
-                  disabled={!shipping.country}
                   value={shipping.zip}
                   onChange={(e) => setShipping({ ...shipping, zip: e.target.value })}
-                  className="input-field disabled:opacity-50 disabled:cursor-not-allowed"
-                  placeholder={shipping.country ? locationData[shipping.country].zipPlaceholder : 'Enter PIN/ZIP Code'}
+                  className="input-field"
+                  placeholder={shipping.country === 'India' ? '400001 (6-digit PIN code)' : 'Enter ZIP/Postal Code'}
                 />
               </div>
             </div>
@@ -366,7 +377,7 @@ export default function Checkout() {
               <button onClick={() => setCurrentStep(0)} className="text-sm text-primary-light hover:text-primary cursor-pointer">Edit</button>
             </div>
              <p className="text-text-secondary text-sm">
-              {shipping.street}, {shipping.city === 'Other' ? customCity : shipping.city}, {shipping.state} - {shipping.zip}, {shipping.country}
+              {shipping.street}, {shipping.district && `${shipping.district}, `}{shipping.city}, {shipping.country === 'Other' ? shipping.customState : shipping.state} - {shipping.zip}, {shipping.country === 'Other' ? shipping.customCountry : shipping.country}
             </p>
           </div>
 
