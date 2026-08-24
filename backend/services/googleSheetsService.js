@@ -1,9 +1,21 @@
 const { google } = require('googleapis');
 
+const cleanEnvVar = (val) => {
+  if (!val) return '';
+  let cleaned = val.trim();
+  if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
+    cleaned = cleaned.slice(1, -1);
+  }
+  if (cleaned.startsWith("'") && cleaned.endsWith("'")) {
+    cleaned = cleaned.slice(1, -1);
+  }
+  return cleaned.trim();
+};
+
 const getSheetsClient = () => {
-  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY;
-  const sheetId = process.env.GOOGLE_SHEET_ID;
+  const email = cleanEnvVar(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL);
+  const privateKey = cleanEnvVar(process.env.GOOGLE_PRIVATE_KEY);
+  const sheetId = cleanEnvVar(process.env.GOOGLE_SHEET_ID);
 
   if (!email || !privateKey || !sheetId) {
     console.warn('Google Sheets credentials (GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_PRIVATE_KEY, GOOGLE_SHEET_ID) are not configured in .env. Skipping Google Sheets synchronization.');
@@ -35,7 +47,7 @@ const syncOrderToSheet = async (order, user) => {
   const sheets = getSheetsClient();
   if (!sheets) return;
 
-  const sheetId = process.env.GOOGLE_SHEET_ID;
+  const sheetId = cleanEnvVar(process.env.GOOGLE_SHEET_ID);
 
   const address = `${order.shippingAddress.street}, ${order.shippingAddress.city}, ${order.shippingAddress.state} - ${order.shippingAddress.zip}, ${order.shippingAddress.country}`;
   const items = order.orderItems.map((item) => `${item.name} (x${item.quantity})`).join(', ');
@@ -104,7 +116,7 @@ const updateOrderInSheet = async (orderId, newStatus) => {
   const sheets = getSheetsClient();
   if (!sheets) return;
 
-  const sheetId = process.env.GOOGLE_SHEET_ID;
+  const sheetId = cleanEnvVar(process.env.GOOGLE_SHEET_ID);
 
   try {
     // First, find the row of the order
