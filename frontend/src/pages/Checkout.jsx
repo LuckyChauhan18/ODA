@@ -69,6 +69,7 @@ export default function Checkout() {
     street: '',
     city: '',
     district: '',
+    customDistrict: '',
     state: '',
     zip: '',
     country: 'India',
@@ -242,6 +243,7 @@ export default function Checkout() {
                       state: '',
                       customState: '',
                       district: '',
+                      customDistrict: '',
                       city: '',
                       zip: '',
                     });
@@ -270,7 +272,14 @@ export default function Checkout() {
                   <select
                     required
                     value={shipping.state}
-                    onChange={(e) => setShipping({ ...shipping, state: e.target.value })}
+                    onChange={(e) =>
+                      setShipping({
+                        ...shipping,
+                        state: e.target.value,
+                        district: '',
+                        customDistrict: '',
+                      })
+                    }
                     className="input-field cursor-pointer"
                   >
                     <option value="">Select State</option>
@@ -294,14 +303,48 @@ export default function Checkout() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1.5">District</label>
-                <input
-                  type="text"
-                  required
-                  value={shipping.district}
-                  onChange={(e) => setShipping({ ...shipping, district: e.target.value })}
-                  className="input-field"
-                  placeholder="e.g. Lucknow"
-                />
+                {shipping.country === 'India' ? (
+                  <>
+                    <select
+                      required
+                      disabled={!shipping.state}
+                      value={shipping.district}
+                      onChange={(e) => {
+                        const newDistrict = e.target.value;
+                        setShipping({ ...shipping, district: newDistrict });
+                      }}
+                      className="input-field cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <option value="">Select District</option>
+                      {shipping.state &&
+                        stateDistricts[shipping.state]?.map((d) => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      <option value="Other">Other (Type custom district)</option>
+                    </select>
+                    {shipping.district === 'Other' && (
+                      <div className="mt-3">
+                        <input
+                          type="text"
+                          required
+                          value={shipping.customDistrict}
+                          onChange={(e) => setShipping({ ...shipping, customDistrict: e.target.value })}
+                          className="input-field"
+                          placeholder="Enter district name"
+                        />
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <input
+                    type="text"
+                    required
+                    value={shipping.district}
+                    onChange={(e) => setShipping({ ...shipping, district: e.target.value })}
+                    className="input-field"
+                    placeholder="Enter district"
+                  />
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">City</label>
