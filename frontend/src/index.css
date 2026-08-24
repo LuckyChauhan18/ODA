@@ -1,37 +1,39 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Vast+Shadow&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Vast+Shadow&display=swap');
 
 /* ===== Custom Design Tokens ===== */
 @theme {
-  --color-primary: #A67C32;
-  --color-primary-light: #C9A45C;
-  --color-primary-dark: #8B6625;
-  --color-secondary: #FF6B6B;
-  --color-secondary-light: #FF8E8E;
-  --color-accent: #00D2FF;
-  --color-accent-2: #C9A45C;
+  --color-primary: #B85D36;
+  --color-primary-light: #D47B52;
+  --color-primary-dark: #914524;
+  --color-secondary: #E3A082;
+  --color-secondary-light: #F2C2AD;
+  --color-accent: #B85D36;
+  --color-accent-2: #D47B52;
 
-  --color-surface: #F5F5F0;
+  --color-surface: #F7F4EF;
   --color-surface-2: #FFFFFF;
-  --color-surface-3: #EEEAE0;
-  --color-surface-4: #E5E0D5;
+  --color-surface-3: #EDE8DF;
+  --color-surface-4: #E2DBD0;
 
   --color-glass: rgba(255, 255, 255, 0.7);
-  --color-glass-border: #D9D9E0;
-  --color-glass-hover: rgba(166, 124, 50, 0.05);
+  --color-glass-border: #E8E2D6;
+  --color-glass-hover: rgba(184, 93, 54, 0.05);
 
-  --color-text: #0B0B0F;
-  --color-text-secondary: #686873;
-  --color-text-muted: #8E8E9B;
+  --color-text: #2C3830;
+  --color-text-secondary: #635B52;
+  --color-text-muted: #8D8275;
 
-  --color-success: #00E676;
-  --color-warning: #FFD600;
-  --color-danger: #FF5252;
-  --color-info: #40C4FF;
+  --color-success: #2C6B4E;
+  --color-warning: #D9A05B;
+  --color-danger: #D32F2F;
+  --color-info: #2B7A78;
 
-  --font-family-display: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Cormorant Garamond', 'Playfair Display', serif;
+  --font-family-display: 'Inter', sans-serif;
   --font-logo: 'Vast Shadow', serif;
+
+  --shadow-warm: 0 10px 30px rgba(44, 56, 48, 0.06);
 }
 
 /* ===== Base Styles ===== */
@@ -54,6 +56,12 @@
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    color: var(--color-text);
+    font-weight: 600;
   }
 
   /* Scrollbar */
@@ -271,11 +279,12 @@
     @apply rounded-2xl p-6 transition-all duration-300 ease-in-out;
     background: var(--color-surface-2);
     border: 1px solid var(--color-glass-border);
+    box-shadow: var(--shadow-warm);
   }
 
   .card:hover {
-    border-color: rgba(108, 99, 255, 0.3);
-    box-shadow: 0 8px 32px rgba(108, 99, 255, 0.1);
+    border-color: rgba(184, 93, 54, 0.15);
+    box-shadow: 0 15px 35px rgba(44, 56, 48, 0.1);
   }
 
   .badge,

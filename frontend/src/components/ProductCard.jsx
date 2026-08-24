@@ -107,7 +107,6 @@ export default function ProductCard({ product, wishlist = [], onWishlistChange }
     <Link
       to={`/products/${product._id}`}
       className="group card !p-0 overflow-hidden card-hover hover:!-translate-y-2 flex flex-col h-full"
-      style={{ backgroundColor: '#d5b59c' }}
     >
       {/* Image */}
       <div className="relative overflow-hidden aspect-square bg-surface-3">
@@ -163,7 +162,7 @@ export default function ProductCard({ product, wishlist = [], onWishlistChange }
                      hover:scale-110 cursor-pointer"
         >
           {isWishlisted ? (
-            <HiHeart className="w-5 h-5 text-secondary" />
+            <HiHeart className="w-5 h-5 text-primary" />
           ) : (
             <HiOutlineHeart className="w-5 h-5 text-text" />
           )}
@@ -174,10 +173,10 @@ export default function ProductCard({ product, wishlist = [], onWishlistChange }
             onClick={handleAddToCart}
             disabled={addingToCart || product.stock === 0}
             className="w-full py-2.5 rounded-xl text-sm font-semibold text-white
-                       glass-strong hover:bg-primary/80 transition-all duration-200
+                       hover:bg-primary-dark transition-all duration-200
                        flex items-center justify-center gap-2 cursor-pointer
                        disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ background: 'rgba(108, 99, 255, 0.8)' }}
+            style={{ background: 'var(--color-primary)' }}
           >
             <HiOutlineShoppingCart className="w-4 h-4" />
             {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
