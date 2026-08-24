@@ -27,3 +27,8 @@ build/
 *.sw?
 .DS_Store
 Thumbs.db
+
+# Service Account credentials
+*rangnest*.json
+*serviceaccount*.json
+*credentials*.json
