@@ -1,46 +1,62 @@
 const { google } = require('googleapis');
 
-const cleanEnvVar = (val) => {
-  if (!val) return '';
-  let cleaned = val.trim();
-  if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
-    cleaned = cleaned.slice(1, -1);
-  }
-  if (cleaned.startsWith("'") && cleaned.endsWith("'")) {
-    cleaned = cleaned.slice(1, -1);
-  }
-  return cleaned.trim();
-};
-
+/**
+ * Loads credentials from either:
+ *  1. GOOGLE_CREDENTIALS_BASE64 — base64-encoded JSON key file (preferred, avoids newline issues)
+ *  2. Individual env vars: GOOGLE_SERVICE_ACCOUNT_EMAIL + GOOGLE_PRIVATE_KEY (fallback)
+ */
 const getSheetsClient = () => {
-  const email = cleanEnvVar(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL);
-  const privateKey = cleanEnvVar(process.env.GOOGLE_PRIVATE_KEY);
-  const sheetId = cleanEnvVar(process.env.GOOGLE_SHEET_ID);
+  const sheetId = (process.env.GOOGLE_SHEET_ID || '').trim().replace(/^["']|["']$/g, '');
 
-  if (!email || !privateKey || !sheetId) {
-    console.warn('Google Sheets credentials (GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_PRIVATE_KEY, GOOGLE_SHEET_ID) are not configured in .env. Skipping Google Sheets synchronization.');
+  if (!sheetId) {
+    console.warn('GOOGLE_SHEET_ID is not configured. Skipping Google Sheets sync.');
     return null;
   }
 
-  // Format private key correctly (rebuild PEM string to be 100% resilient to formatting errors)
-  let formattedKey = privateKey.replace(/\\n/g, '\n').replace(/\\r/g, '\r');
-  const base64Content = formattedKey
-    .replace('-----BEGIN PRIVATE KEY-----', '')
-    .replace('-----END PRIVATE KEY-----', '')
-    .replace(/\s+/g, '');
+  let credentials;
 
-  const lines = [];
-  for (let i = 0; i < base64Content.length; i += 64) {
-    lines.push(base64Content.slice(i, i + 64));
+  // Method 1: Base64-encoded full JSON key file (most reliable)
+  if (process.env.GOOGLE_CREDENTIALS_BASE64) {
+    try {
+      const decoded = Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64.trim(), 'base64').toString('utf8');
+      credentials = JSON.parse(decoded);
+      console.log('Google Sheets: Loaded credentials from GOOGLE_CREDENTIALS_BASE64');
+    } catch (err) {
+      console.error('Failed to decode GOOGLE_CREDENTIALS_BASE64:', err.message);
+      return null;
+    }
   }
-  
-  formattedKey = `-----BEGIN PRIVATE KEY-----\n${lines.join('\n')}\n-----END PRIVATE KEY-----\n`;
+
+  // Method 2: Individual env vars (fallback)
+  if (!credentials) {
+    const email = (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || '').trim().replace(/^["']|["']$/g, '');
+    let privateKey = (process.env.GOOGLE_PRIVATE_KEY || '').trim().replace(/^["']|["']$/g, '');
+
+    if (!email || !privateKey) {
+      console.warn('Google Sheets credentials not configured. Skipping sync.');
+      return null;
+    }
+
+    // Normalize PEM key
+    privateKey = privateKey.replace(/\\n/g, '\n').replace(/\\r/g, '\r');
+    const base64Body = privateKey
+      .replace('-----BEGIN PRIVATE KEY-----', '')
+      .replace('-----END PRIVATE KEY-----', '')
+      .replace(/\s+/g, '');
+    const lines = [];
+    for (let i = 0; i < base64Body.length; i += 64) {
+      lines.push(base64Body.slice(i, i + 64));
+    }
+    privateKey = `-----BEGIN PRIVATE KEY-----\n${lines.join('\n')}\n-----END PRIVATE KEY-----\n`;
+
+    credentials = { client_email: email, private_key: privateKey };
+  }
 
   try {
     const auth = new google.auth.GoogleAuth({
       credentials: {
-        client_email: email,
-        private_key: formattedKey,
+        client_email: credentials.client_email,
+        private_key: credentials.private_key,
       },
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
@@ -59,7 +75,7 @@ const syncOrderToSheet = async (order, user) => {
   const sheets = getSheetsClient();
   if (!sheets) return;
 
-  const sheetId = cleanEnvVar(process.env.GOOGLE_SHEET_ID);
+  const sheetId = (process.env.GOOGLE_SHEET_ID || '').trim().replace(/^["']|["']$/g, '');
 
   const address = `${order.shippingAddress.street}, ${order.shippingAddress.city}, ${order.shippingAddress.state} - ${order.shippingAddress.zip}, ${order.shippingAddress.country}`;
   const items = order.orderItems.map((item) => `${item.name} (x${item.quantity})`).join(', ');
@@ -128,7 +144,7 @@ const updateOrderInSheet = async (orderId, newStatus) => {
   const sheets = getSheetsClient();
   if (!sheets) return;
 
-  const sheetId = cleanEnvVar(process.env.GOOGLE_SHEET_ID);
+  const sheetId = (process.env.GOOGLE_SHEET_ID || '').trim().replace(/^["']|["']$/g, '');
 
   try {
     // First, find the row of the order
