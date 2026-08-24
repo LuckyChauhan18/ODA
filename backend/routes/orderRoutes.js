@@ -7,11 +7,13 @@ const {
   getOrderById,
   getAllOrders,
   updateOrderStatus,
+  cancelOrder,
 } = require('../controllers/orderController');
 
 // Protected routes
 router.post('/', protect, createOrder);
 router.get('/my', protect, getMyOrders);
+router.put('/:id/cancel', protect, cancelOrder);
 
 // Admin routes
 router.get('/', protect, admin, getAllOrders);

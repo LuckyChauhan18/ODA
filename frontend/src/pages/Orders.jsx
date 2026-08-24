@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../utils/api';
 import { PageLoader } from '../components/Loader';
 import { HiOutlineClipboardList, HiOutlineEye } from 'react-icons/hi';
+import toast from 'react-hot-toast';
 
 const statusColors = {
   Processing: 'badge-warning',
@@ -29,6 +30,21 @@ export default function Orders() {
     };
     fetchOrders();
   }, []);
+
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm('Are you sure you want to cancel this order?')) {
+      return;
+    }
+    try {
+      const { data } = await api.put(`/orders/${orderId}/cancel`);
+      if (data.success) {
+        toast.success('Order cancelled successfully');
+        setOrders(orders.map((o) => (o._id === orderId ? { ...o, status: 'Cancelled' } : o)));
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to cancel order');
+    }
+  };
 
   if (loading) return <PageLoader />;
 
@@ -117,6 +133,16 @@ export default function Orders() {
                       </p>
                     </div>
                   </div>
+                  {order.status === 'Processing' && (
+                    <div className="mt-4 pt-3 border-t border-glass-border flex justify-end">
+                      <button
+                        onClick={() => handleCancelOrder(order._id)}
+                        className="btn-danger !px-4 !py-2 text-xs cursor-pointer"
+                      >
+                        Cancel Order
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

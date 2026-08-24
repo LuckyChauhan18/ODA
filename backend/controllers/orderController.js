@@ -149,6 +149,7 @@ const updateOrderStatus = async (req, res, next) => {
       });
     }
 
+    const oldStatus = order.status;
     order.status = req.body.status;
 
     if (req.body.status === 'Delivered') {
@@ -157,8 +158,72 @@ const updateOrderStatus = async (req, res, next) => {
       order.paidAt = Date.now();
     }
 
+    if (req.body.status === 'Cancelled' && oldStatus !== 'Cancelled') {
+      // Restore product stock
+      for (const item of order.orderItems) {
+        const product = await Product.findById(item.product);
+        if (product) {
+          product.stock = product.stock + item.quantity;
+          await product.save();
+        }
+      }
+    }
+
     const updatedOrder = await order.save();
     res.json({ success: true, data: updatedOrder });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Cancel order
+// @route   PUT /api/orders/:id/cancel
+// @access  Protected
+const cancelOrder = async (req, res, next) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found',
+      });
+    }
+
+    // Check if user is authorized to cancel
+    if (order.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(401).json({
+        success: false,
+        message: 'Not authorized to cancel this order',
+      });
+    }
+
+    // Check if order can be cancelled
+    if (order.status !== 'Processing') {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot cancel order that is already ${order.status.toLowerCase()}`,
+      });
+    }
+
+    // Update status to Cancelled
+    order.status = 'Cancelled';
+    await order.save();
+
+    // Restore product stock
+    for (const item of order.orderItems) {
+      const product = await Product.findById(item.product);
+      if (product) {
+        product.stock = product.stock + item.quantity;
+        await product.save();
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Order cancelled successfully',
+      data: order,
+    });
   } catch (error) {
     next(error);
   }
@@ -170,4 +235,5 @@ module.exports = {
   getOrderById,
   getAllOrders,
   updateOrderStatus,
+  cancelOrder,
 };
