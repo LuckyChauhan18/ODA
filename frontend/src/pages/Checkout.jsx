@@ -7,6 +7,79 @@ import { HiCheck } from 'react-icons/hi';
 
 const steps = ['Shipping', 'Payment', 'Review'];
 
+const locationData = {
+  India: {
+    states: {
+      'Andhra Pradesh': ['Visakhapatnam', 'Vijayawada', 'Guntur', 'Nellore', 'Tirupati', 'Kurnool'],
+      'Bihar': ['Patna', 'Gaya', 'Bhagalpur', 'Muzaffarpur', 'Darbhanga', 'Bihar Sharif'],
+      'Delhi': ['New Delhi', 'Delhi Cantonment', 'Dwarka', 'Rohini', 'Vasant Kunj'],
+      'Gujarat': ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Bhavnagar', 'Jamnagar', 'Gandhinagar'],
+      'Haryana': ['Gurugram', 'Faridabad', 'Panipat', 'Ambala', 'Yamunanagar', 'Rohtak', 'Hisar'],
+      'Karnataka': ['Bengaluru', 'Mysuru', 'Hubballi', 'Mangaluru', 'Belagavi', 'Davangere'],
+      'Kerala': ['Thiruvananthapuram', 'Kochi', 'Kozhikode', 'Thrissur', 'Kollam', 'Alappuzha'],
+      'Madhya Pradesh': ['Indore', 'Bhopal', 'Jabalpur', 'Gwalior', 'Ujjain', 'Sagar'],
+      'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Thane', 'Nashik', 'Aurangabad', 'Navi Mumbai', 'Solapur'],
+      'Punjab': ['Ludhiana', 'Amritsar', 'Jalandhar', 'Patiala', 'Bathinda', 'Mohali'],
+      'Rajasthan': ['Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Bikaner', 'Ajmer'],
+      'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Salem', 'Tiruppur'],
+      'Telangana': ['Hyderabad', 'Warangal', 'Nizamabad', 'Karimnagar', 'Khammam'],
+      'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Ghaziabad', 'Agra', 'Varanasi', 'Meerut', 'Noida', 'Prayagraj'],
+      'West Bengal': ['Kolkata', 'Howrah', 'Durgapur', 'Siliguri', 'Asansol', 'Kharagpur']
+    },
+    zipRegex: /^[1-9][0-9]{5}$/,
+    zipPlaceholder: '400001 (6-digit PIN code)',
+    zipLabel: 'PIN Code'
+  },
+  'United States': {
+    states: {
+      'California': ['Los Angeles', 'San Francisco', 'San Diego', 'San Jose', 'Sacramento', 'Oakland'],
+      'Texas': ['Houston', 'Austin', 'Dallas', 'San Antonio', 'Fort Worth', 'El Paso'],
+      'New York': ['New York City', 'Buffalo', 'Rochester', 'Syracuse', 'Albany', 'Yonkers'],
+      'Florida': ['Miami', 'Orlando', 'Tampa', 'Jacksonville', 'Tallahassee', 'St. Petersburg'],
+      'Illinois': ['Chicago', 'Aurora', 'Naperville', 'Joliet', 'Rockford', 'Springfield'],
+      'Washington': ['Seattle', 'Spokane', 'Tacoma', 'Vancouver', 'Bellevue', 'Olympia']
+    },
+    zipRegex: /^\d{5}(-\d{4})?$/,
+    zipPlaceholder: '90210 or 90210-1234 (ZIP code)',
+    zipLabel: 'ZIP Code'
+  },
+  Canada: {
+    states: {
+      'Ontario': ['Toronto', 'Ottawa', 'Mississauga', 'Hamilton', 'London', 'Brampton'],
+      'Quebec': ['Montreal', 'Quebec City', 'Laval', 'Gatineau', 'Longueuil', 'Sherbrooke'],
+      'British Columbia': ['Vancouver', 'Victoria', 'Surrey', 'Burnaby', 'Richmond', 'Kelowna'],
+      'Alberta': ['Calgary', 'Edmonton', 'Red Deer', 'Lethbridge', 'St. Albert']
+    },
+    zipRegex: /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/,
+    zipPlaceholder: 'K1A 0B1 (Postal Code)',
+    zipLabel: 'Postal Code'
+  },
+  'United Kingdom': {
+    states: {
+      'England': ['London', 'Birmingham', 'Manchester', 'Liverpool', 'Leeds', 'Bristol', 'Newcastle'],
+      'Scotland': ['Edinburgh', 'Glasgow', 'Aberdeen', 'Dundee', 'Inverness'],
+      'Wales': ['Cardiff', 'Swansea', 'Newport', 'St Davids'],
+      'Northern Ireland': ['Belfast', 'Derry', 'Lisburn', 'Newry', 'Armagh']
+    },
+    zipRegex: /^[A-Z]{1,2}[0-9R][0-9A-Z]? [0-9][A-Z]{2}$/i,
+    zipPlaceholder: 'EC1A 1BB (Postcode)',
+    zipLabel: 'Postcode'
+  }
+};
+
+const isFakeZip = (zip, country) => {
+  if (country === 'India') {
+    if (/^(.)\1+$/.test(zip)) return true;
+    if (zip.startsWith('0')) return true;
+  }
+  return false;
+};
+
+const isFakeCity = (cityName) => {
+  const dummyNames = ['test', 'fake', 'dummy', 'abc', 'xyz', 'none', 'null', 'undefined', 'city', 'somewhere'];
+  return dummyNames.includes(cityName.toLowerCase().trim()) || cityName.length < 3;
+};
+
 export default function Checkout() {
   const { items, totalPrice, clearCart } = useCart();
   const navigate = useNavigate();
@@ -15,6 +88,7 @@ export default function Checkout() {
   const [shipping, setShipping] = useState({
     street: '', city: '', state: '', zip: '', country: 'India',
   });
+  const [customCity, setCustomCity] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('COD');
 
   const shippingPrice = totalPrice > 500 ? 0 : 50;
@@ -23,6 +97,51 @@ export default function Checkout() {
 
   const handleShippingSubmit = (e) => {
     e.preventDefault();
+
+    const { country, state, city, zip } = shipping;
+
+    if (!country || !state || !city || !zip) {
+      toast.error('Please fill in all shipping details');
+      return;
+    }
+
+    const countryConfig = locationData[country];
+    if (!countryConfig) {
+      toast.error('Invalid country selection');
+      return;
+    }
+
+    // Validate ZIP Code regex
+    if (!countryConfig.zipRegex.test(zip)) {
+      toast.error(`Please enter a valid ${countryConfig.zipLabel} for ${country}`);
+      return;
+    }
+
+    // Check for fake ZIP code
+    if (isFakeZip(zip, country)) {
+      toast.error(`Invalid ${countryConfig.zipLabel}. Please enter a real postal code.`);
+      return;
+    }
+
+    // Determine final city value
+    const finalCity = city === 'Other' ? customCity.trim() : city;
+    if (!finalCity) {
+      toast.error('Please specify a city name');
+      return;
+    }
+
+    // Validate custom city name
+    if (city === 'Other') {
+      if (!/^[a-zA-Z\s.-]+$/.test(finalCity)) {
+        toast.error('City name must contain only letters, spaces, or dashes');
+        return;
+      }
+      if (isFakeCity(finalCity)) {
+        toast.error('Please enter a valid city name, not a fake or placeholder name');
+        return;
+      }
+    }
+
     setCurrentStep(1);
   };
 
@@ -34,8 +153,12 @@ export default function Checkout() {
   const handlePlaceOrder = async () => {
     try {
       setPlacing(true);
+      const finalShipping = {
+        ...shipping,
+        city: shipping.city === 'Other' ? customCity.trim() : shipping.city
+      };
       const { data } = await api.post('/orders', {
-        shippingAddress: shipping,
+        shippingAddress: finalShipping,
         paymentMethod,
       });
       if (data.success) {
@@ -98,37 +221,102 @@ export default function Checkout() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5">City</label>
-                <input
-                  type="text" required value={shipping.city}
-                  onChange={(e) => setShipping({ ...shipping, city: e.target.value })}
-                  className="input-field" placeholder="Mumbai"
-                />
+                <label className="block text-sm font-medium mb-1.5">Country</label>
+                <select
+                  required
+                  value={shipping.country}
+                  onChange={(e) => {
+                    const newCountry = e.target.value;
+                    setShipping({
+                      ...shipping,
+                      country: newCountry,
+                      state: '',
+                      city: '',
+                      zip: '',
+                    });
+                    setCustomCity('');
+                  }}
+                  className="input-field cursor-pointer"
+                >
+                  <option value="">Select Country</option>
+                  {Object.keys(locationData).map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">State</label>
-                <input
-                  type="text" required value={shipping.state}
-                  onChange={(e) => setShipping({ ...shipping, state: e.target.value })}
-                  className="input-field" placeholder="Maharashtra"
-                />
+                <select
+                  required
+                  disabled={!shipping.country}
+                  value={shipping.state}
+                  onChange={(e) => {
+                    setShipping({
+                      ...shipping,
+                      state: e.target.value,
+                      city: '',
+                    });
+                    setCustomCity('');
+                  }}
+                  className="input-field cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value="">Select State</option>
+                  {shipping.country &&
+                    Object.keys(locationData[shipping.country].states).map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                </select>
               </div>
             </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5">PIN Code</label>
-                <input
-                  type="text" required value={shipping.zip}
-                  onChange={(e) => setShipping({ ...shipping, zip: e.target.value })}
-                  className="input-field" placeholder="400001"
-                />
+                <label className="block text-sm font-medium mb-1.5">City</label>
+                <select
+                  required
+                  disabled={!shipping.state}
+                  value={shipping.city}
+                  onChange={(e) => {
+                    const newCity = e.target.value;
+                    setShipping({ ...shipping, city: newCity });
+                    if (newCity !== 'Other') {
+                      setCustomCity('');
+                    }
+                  }}
+                  className="input-field cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value="">Select City</option>
+                  {shipping.country && shipping.state &&
+                    locationData[shipping.country].states[shipping.state].map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  <option value="Other">Other (Type custom city)</option>
+                </select>
+                {shipping.city === 'Other' && (
+                  <div className="mt-3">
+                    <input
+                      type="text"
+                      required
+                      value={customCity}
+                      onChange={(e) => setCustomCity(e.target.value)}
+                      className="input-field"
+                      placeholder="Enter city name"
+                    />
+                  </div>
+                )}
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5">Country</label>
+                <label className="block text-sm font-medium mb-1.5">
+                  {shipping.country ? locationData[shipping.country].zipLabel : 'PIN/ZIP Code'}
+                </label>
                 <input
-                  type="text" required value={shipping.country}
-                  onChange={(e) => setShipping({ ...shipping, country: e.target.value })}
-                  className="input-field" placeholder="India"
+                  type="text"
+                  required
+                  disabled={!shipping.country}
+                  value={shipping.zip}
+                  onChange={(e) => setShipping({ ...shipping, zip: e.target.value })}
+                  className="input-field disabled:opacity-50 disabled:cursor-not-allowed"
+                  placeholder={shipping.country ? locationData[shipping.country].zipPlaceholder : 'Enter PIN/ZIP Code'}
                 />
               </div>
             </div>
@@ -177,8 +365,8 @@ export default function Checkout() {
               <h3 className="font-semibold">Shipping Address</h3>
               <button onClick={() => setCurrentStep(0)} className="text-sm text-primary-light hover:text-primary cursor-pointer">Edit</button>
             </div>
-            <p className="text-text-secondary text-sm">
-              {shipping.street}, {shipping.city}, {shipping.state} - {shipping.zip}, {shipping.country}
+             <p className="text-text-secondary text-sm">
+              {shipping.street}, {shipping.city === 'Other' ? customCity : shipping.city}, {shipping.state} - {shipping.zip}, {shipping.country}
             </p>
           </div>
 
