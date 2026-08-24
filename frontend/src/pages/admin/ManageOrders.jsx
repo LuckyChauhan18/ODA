@@ -15,6 +15,8 @@ export default function ManageOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('');
+  const [searchUserId, setSearchUserId] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => { fetchOrders(); }, []);
 
@@ -39,6 +41,38 @@ export default function ManageOrders() {
     }
   };
 
+  const handleUserSearch = async (e) => {
+    e.preventDefault();
+    if (!searchUserId.trim()) {
+      fetchOrders();
+      return;
+    }
+    
+    // Validate Mongo ID format
+    if (!/^[0-9a-fA-F]{24}$/.test(searchUserId.trim())) {
+      toast.error('Invalid User ID format. User ID must be a 24-character hex string.');
+      return;
+    }
+
+    try {
+      setIsSearching(true);
+      setLoading(true);
+      const { data } = await api.get(`/orders/user/${searchUserId.trim()}`);
+      setOrders(data.data);
+      toast.success(`Found ${data.count} order(s) for user`);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to search orders for user');
+    } finally {
+      setLoading(false);
+      setIsSearching(false);
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchUserId('');
+    fetchOrders();
+  };
+
   const filteredOrders = statusFilter
     ? orders.filter((o) => o.status === statusFilter)
     : orders;
@@ -58,6 +92,28 @@ export default function ManageOrders() {
           {statusOptions.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
       </div>
+
+      <form onSubmit={handleUserSearch} className="mb-6 flex gap-3 max-w-lg">
+        <input
+          type="text"
+          placeholder="Paste User ID here (24-character hex)..."
+          value={searchUserId}
+          onChange={(e) => setSearchUserId(e.target.value)}
+          className="input-field !py-2 text-sm flex-1"
+        />
+        <button type="submit" className="btn-primary !px-4 !py-2 text-sm cursor-pointer whitespace-nowrap">
+          Search User Orders
+        </button>
+        {searchUserId && (
+          <button
+            type="button"
+            onClick={handleClearSearch}
+            className="btn-secondary !px-4 !py-2 text-sm cursor-pointer"
+          >
+            Clear
+          </button>
+        )}
+      </form>
 
       <div className="card !p-0 overflow-hidden">
         <div className="overflow-x-auto">

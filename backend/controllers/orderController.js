@@ -1,6 +1,7 @@
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
+const { syncOrderToSheet, updateOrderInSheet } = require('../services/googleSheetsService');
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -59,6 +60,11 @@ const createOrder = async (req, res, next) => {
     // Clear cart after order
     cart.items = [];
     await cart.save();
+
+    // Sync order to Google Sheets in background
+    syncOrderToSheet(order, req.user).catch((err) =>
+      console.error('Google Sheets Sync Error:', err)
+    );
 
     res.status(201).json({ success: true, data: order });
   } catch (error) {
@@ -170,6 +176,12 @@ const updateOrderStatus = async (req, res, next) => {
     }
 
     const updatedOrder = await order.save();
+
+    // Update order status in Google Sheets in background
+    updateOrderInSheet(order._id, req.body.status).catch((err) =>
+      console.error('Google Sheets Sync Error:', err)
+    );
+
     res.json({ success: true, data: updatedOrder });
   } catch (error) {
     next(error);
@@ -219,10 +231,31 @@ const cancelOrder = async (req, res, next) => {
       }
     }
 
+    // Update order status in Google Sheets in background
+    updateOrderInSheet(order._id, 'Cancelled').catch((err) =>
+      console.error('Google Sheets Sync Error:', err)
+    );
+
     res.status(200).json({
       success: true,
       message: 'Order cancelled successfully',
       data: order,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get all orders of a user by User ID
+// @route   GET /api/orders/user/:userId
+// @access  Admin
+const getOrdersByUser = async (req, res, next) => {
+  try {
+    const orders = await Order.find({ user: req.params.userId }).populate('user', 'name email');
+    res.json({
+      success: true,
+      count: orders.length,
+      data: orders,
     });
   } catch (error) {
     next(error);
@@ -236,4 +269,5 @@ module.exports = {
   getAllOrders,
   updateOrderStatus,
   cancelOrder,
+  getOrdersByUser,
 };
