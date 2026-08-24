@@ -26,12 +26,13 @@ const getSheetsClient = () => {
   const formattedKey = privateKey.replace(/\\n/g, '\n');
 
   try {
-    const auth = new google.auth.JWT(
-      email,
-      null,
-      formattedKey,
-      ['https://www.googleapis.com/auth/spreadsheets']
-    );
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: email,
+        private_key: formattedKey,
+      },
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
 
     return google.sheets({ version: 'v4', auth });
   } catch (error) {
